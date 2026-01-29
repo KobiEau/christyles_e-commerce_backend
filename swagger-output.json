@@ -5,10 +5,10 @@
     "description": "",
     "version": "1.0.0"
   },
-  "host": "localhost:7000",
+  "host": "christyles-e-commerce-backend.onrender.com",
   "basePath": "/",
   "schemes": [
-    "http"
+    "https"
   ],
   "paths": {
     "/": {
