@@ -1,12 +1,12 @@
-const swaggerAutogen = require("swagger-autogen");
+const swaggerAutogen = require("swagger-autogen")
 
 const doc ={
     info:{
         title: "Boutique E-commerce Platform",
         description: ``
     },
-    host: `localhost:7000`,
-    schemes:["http"]
+    host: `christyles-e-commerce-backend.onrender.com`,
+    schemes:["https"]
 }
 
 const outputFile = "./swagger-output.json";
