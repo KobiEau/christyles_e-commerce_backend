@@ -118,7 +118,7 @@
       }
     },
     "/api/v1/products/edit-product/{productId}": {
-      "put": {
+      "patch": {
         "tags": [
           "Admin"
         ],
