@@ -22,7 +22,7 @@ router.post("/add-product", validateJoiSchema(createProductSchema), imageUpload.
 // #swagger.summary='Create and Add New Product'
 products.createProduct);
 
-router.put("/edit-product/:productId", imageUpload.single("image"),
+router.patch("/edit-product/:productId", imageUpload.single("image"),
 //#swagger.tags=['Admin']
 //#swagger.summary='Edit Product Details By Id'
 products.editProduct);
