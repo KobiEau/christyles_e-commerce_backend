@@ -100,7 +100,7 @@ const createProduct = async (req, res) => {
 const viewProducts = async (req, res) => {
     try {
         const products = await productModel.find();
-        console.log("Products=", products);
+        /* console.log("Products=", products);*/
         if (products === 0) {
             return res.status(404).json({ message: "No products available" });
         }
@@ -180,11 +180,11 @@ const deleteProductById = async (req, res) => {
     try {
         const { productId } = req.params;
         const product = await productModel.findByIdAndDelete(productId);
-        if (!product) {
-            return res.status(404).json({ message: "Product not found" });
-        }
+        if (!product) return res.status(404).json({ message: "Product not found" });
+        
         //deleting image
         await cloudinary.uploader.destroy(product.imagePublicId)
+        
         return res.status(200).json({ message: "Product deleted successfully" });
     } catch (error) {
         console.error("Error Deleting Product", error);
@@ -192,4 +192,38 @@ const deleteProductById = async (req, res) => {
     }
 }
 
-module.exports = { createProduct, viewProducts, viewProductById, deleteProductById, editProduct };
+const searchProducts = async (req,res) =>{
+     const { productName,maxPrice,minPrice,productSizes } = req.query || {};
+    
+     try{
+        let filter = {}
+
+        if(productName) filter.productName = {$regex:productName,$options:"i"};
+        // if(maxPrice) filter.maxProductPrice = {$lte:Number(maxPrice)};
+        // if(minPrice) filter.minProductPrice = {$gte:Number(minPrice)};
+        // Initialize the productPrice filter if either exists
+        if (minPrice || maxPrice) {
+            filter.productPrice = {}; 
+
+            if (minPrice) {
+                filter.productPrice.$gte = Number(minPrice); // Greater than or equal to
+            }
+            if (maxPrice) {
+                filter.productPrice.$lte = Number(maxPrice); // Less than or equal to
+            }
+        }
+        if(productSizes) filter.productSizes = {$regex:productSizes,$options:"i"};
+
+        const products = await productModel.find(filter);
+
+        if(products.length === 0) return res.status(404).json({message:"No Products found"});
+
+        return res.status(200).json({message:"Products found", count:products.length , products});
+     }
+     catch(error){
+        console.error("Error Searching for product",error);
+        res.status(500).json({message:"Internal Server error",error: error.message || error })
+     }
+}
+
+module.exports = { createProduct, viewProducts, viewProductById, deleteProductById, editProduct,searchProducts };
