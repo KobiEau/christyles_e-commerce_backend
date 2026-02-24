@@ -32,5 +32,10 @@ router.delete("/delete-product/:productId",
 //#swagger.summary = 'Delete Product By Id'
 products.deleteProductById);
 
+router.get("/search",
+//#swagger.tags = ['Users','Admin']
+//#swagger.summary = 'Search for products'
+products.searchProducts);
+
 
 module.exports = router;
