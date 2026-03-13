@@ -1,25 +1,25 @@
 const productModel = require("../models/product.model");
-const cloudinaryConfig = require("../config/cloudinary.config");
-const cloudinary = require("cloudinary").v2;
+const cloudinary = require("../config/cloudinary.config");
+const {imgUpload,fileUpload,deleteFile}= require("../config/fileUpload.config");
 
 //Creating new product entry
 
 const createProduct = async (req, res) => {
-    let result;
+    let uploadedFile;
 
     try {
         //checking for uploaded file details
-        console.log("req.file=", req.file)
-        console.log("req.file.path", req.file.path);
+        // console.log("req.file=", req.file)
+        // console.log("req.file.path", req.file.path);
 
 
         //destructuring variables
         const { productName, productDetail, productPrice, productStock, productSizes } = req.body
 
-        result = await cloudinaryConfig.uploader.upload(req.file.path, { folder: "Christyles" });
+        uploadedFile = await fileUpload(req.file.path,"Christyles");
 
         // debugging 
-        console.log("result=", result);
+        console.log("uploadedFile=", uploadedFile);
 
         //Saving product
         const newProduct = new productModel({
@@ -28,8 +28,8 @@ const createProduct = async (req, res) => {
             productPrice,
             productStock,
             productSizes,
-            imageUrl: result.secure_url,
-            imagePublicId: result.public_id
+            imageUrl: uploadedFile.url,
+            imagePublicId: uploadedFile.public_id
         });
 
         const saved = await newProduct.save();
@@ -37,10 +37,11 @@ const createProduct = async (req, res) => {
         res.status(201).json(saved);
 
     } catch (error) {
-        console.error("Error creating product", error);
-        console.log("public_id=", result.public_id)
-        if (result && result.public_id) {
-            await cloudinary.uploader.destroy(result.public_id);
+        
+
+        console.log("public_id=", uploadedFile.public_id)
+        if ( uploadedFile?.public_id) {
+            await deleteFile(uploadedFile.public_id);
             console.log("deleted uploaded file");
         }
         res.status(500).json({ message: "Failed to create product", error: error || error.messsage });
@@ -58,12 +59,12 @@ const createProduct = async (req, res) => {
 //         // Destructuring variables
 //         const { productName, productDetail, productPrice, productStock, productSizes } = req.body;
 
-//         const result = await cloud
+//         const uploadedFile = await cloud
 // uploader.upload(req.file.path, { folder: "Christyles" });
-//         uploadedImagePublicId = result.public_id; // Store public_id for cleanup
+//         uploadedImagePublicId = uploadedFile.public_id; // Store public_id for cleanup
 
 //         // Debugging
-//         console.log("result=", result);
+//         console.log("uploadedFile=", uploadedFile);
 
 //         // Saving product
 //         const newProduct = new productModel({
@@ -72,8 +73,8 @@ const createProduct = async (req, res) => {
 //             productPrice,
 //             productStock,
 //             productSizes,
-//             imageUrl: result.secure_url,
-//             imagePublicId: result.public_id
+//             imageUrl: uploadedFile.secure_url,
+//             imagePublicId: uploadedFile.public_id
 //         });
 
 //         const saved = await newProduct.save();
@@ -140,20 +141,28 @@ const editProduct = async (req, res) => {
         
         // Use a simple loop or manual check now that they are defined
         if (productName) updates.productName = productName;
-        if (productDetail) updates.productDetail = productDetail;
-        if (productPrice) updates.productPrice = productPrice;
-        if (productStock) updates.productStock = productStock;
+        if (productDetail !== undefined) updates.productDetail = productDetail;
+        if (productPrice !== undefined) updates.productPrice = productPrice;
+        if (productStock !== undefined) updates.productStock = productStock;
         if (productSizes) updates.productSizes = productSizes;
 
         // Handle Image Update
         if (req.file) {
+            
+             //2. Upload new file
+            const uploadedFile = await fileUpload(req.file.path,"Christyles");
+            
+            const oldPublicId= product.imagePublicId
+           
+            // 3. Assign new image details (assuming multer-storage-cloudinary)
+            updates.imageUrl = uploadedFile.url;
+            updates.imagePublicId = uploadedFile.public_id;
+            
             // 1. Delete old image from Cloudinary
-            if (product.imagePublicId) {
-                await cloudinary.uploader.destroy(product.imagePublicId);
+            if (uploadedFile.public_id && oldPublicId) {
+                await deleteFile(oldPublicId);
             }
-            // 2. Assign new image details (assuming multer-storage-cloudinary)
-            updates.imageUrl = req.file.path;
-            updates.imagePublicId = req.file.filename;
+           
         }
 
         const updatedProduct = await productModel.findByIdAndUpdate(
@@ -179,12 +188,13 @@ const editProduct = async (req, res) => {
 const deleteProductById = async (req, res) => {
     try {
         const { productId } = req.params;
-        const product = await productModel.findByIdAndDelete(productId);
+        const product = await productModel.findById(productId);
         if (!product) return res.status(404).json({ message: "Product not found" });
         
         //deleting image
-        await cloudinary.uploader.destroy(product.imagePublicId)
-        
+        if (product.imagePublicId) await deleteFile(product.imagePublicId);
+        await productModel.findByIdAndDelete(productId);
+
         return res.status(200).json({ message: "Product deleted successfully" });
     } catch (error) {
         console.error("Error Deleting Product", error);
