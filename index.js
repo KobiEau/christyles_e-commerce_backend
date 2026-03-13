@@ -4,6 +4,7 @@ const PORT = process.env.PORT || 8000 ;
 const DBConnect = require("./config/db.config");
 const cors= require("cors");
 const productRoutes = require("./routes/product.route");
+const errorHandler=require("./middleware/errorHandler.middleware")
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerdocument = require("./swagger-output.json");
@@ -30,5 +31,5 @@ const startServer = async ()=>{
         process.exit(1);
     }
 };
-
+app.use(errorHandler);
 startServer();
