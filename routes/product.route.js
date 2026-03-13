@@ -4,7 +4,7 @@ const router = Router();
 const validateJoiSchema = require("../middleware/validateSchema.middleware");
 const products = require("../controllers/product.controller");
 const createProductSchema = require("../validation/product.schema")
-const imageUpload = require("../utils/imageUpload.util")
+const imgUpload = require("../config/fileUpload.config").imgUpload
 
 // Products
 router.get("/view-all-products",
@@ -17,12 +17,12 @@ router.get("/view-product/:productId",
 // #swagger.summary = 'View Specific Products'
 products.viewProductById);
 
-router.post("/add-product", validateJoiSchema(createProductSchema), imageUpload.single("image"),
+router.post("/add-product", validateJoiSchema(createProductSchema), imgUpload.single("image"),
 // #swagger.tags=['Admin'] 
 // #swagger.summary='Create and Add New Product'
 products.createProduct);
 
-router.patch("/edit-product/:productId", imageUpload.single("image"),
+router.patch("/edit-product/:productId", imgUpload.single("image"),
 //#swagger.tags=['Admin']
 //#swagger.summary='Edit Product Details By Id'
 products.editProduct);
