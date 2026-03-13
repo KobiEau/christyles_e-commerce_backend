@@ -196,6 +196,49 @@
           }
         }
       }
+    },
+    "/api/v1/products/search": {
+      "get": {
+        "tags": [
+          "Users",
+          "Admin"
+        ],
+        "summary": "Search for products",
+        "description": "",
+        "parameters": [
+          {
+            "name": "productName",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "maxPrice",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "minPrice",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "productSizes",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
     }
   }
 }
