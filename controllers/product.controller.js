@@ -4,7 +4,7 @@ const {imgUpload,fileUpload,deleteFile}= require("../config/fileUpload.config");
 
 //Creating new product entry
 
-const createProduct = async (req, res) => {
+const createProduct = async (req, res,next) => {
     let uploadedFile;
 
     try {
@@ -12,7 +12,11 @@ const createProduct = async (req, res) => {
         // console.log("req.file=", req.file)
         // console.log("req.file.path", req.file.path);
 
-
+        if(!req.file){
+          const error=new Error("Please upload a product image");
+          error.statusCode = 400;
+          return next(error) 
+        }
         //destructuring variables
         const { productName, productDetail, productPrice, productStock, productSizes } = req.body
 
@@ -44,7 +48,8 @@ const createProduct = async (req, res) => {
             await deleteFile(uploadedFile.public_id);
             console.log("deleted uploaded file");
         }
-        res.status(500).json({ message: "Failed to create product", error: error || error.messsage });
+        // res.status(500).json({ message: "Failed to create product", error: error || error.messsage });
+        next(error)
     }
 }
 
